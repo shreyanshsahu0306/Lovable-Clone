@@ -1,3 +1,23 @@
 spring:
   application:
     name: Lovable-clone
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/testDB
+    username: test
+    password: password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET TimeZone TO 'Asia/Kolkata'
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.jdbc.time_zone: Asia/Kolkata
+      hibernate.format_sql: true
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8081

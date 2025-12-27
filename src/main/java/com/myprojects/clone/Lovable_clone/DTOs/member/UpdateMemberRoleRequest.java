@@ -1,6 +1,6 @@
-package com.codingshuttle.projects.lovable_clone.dto.member;
+package com.myprojects.clone.Lovable_clone.DTOs.member;
 
-import com.codingshuttle.projects.lovable_clone.enums.ProjectRole;
+import com.myprojects.clone.Lovable_clone.Enums.ProjectRole;
 
 public record UpdateMemberRoleRequest(ProjectRole role) {
 }
