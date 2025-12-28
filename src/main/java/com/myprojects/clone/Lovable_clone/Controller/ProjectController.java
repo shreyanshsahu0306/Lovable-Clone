@@ -1,6 +1,4 @@
 package com.myprojects.clone.Lovable_clone.Controller;
-
-
 import com.myprojects.clone.Lovable_clone.DTOs.project.ProjectRequest;
 import com.myprojects.clone.Lovable_clone.DTOs.project.ProjectResponse;
 import com.myprojects.clone.Lovable_clone.DTOs.project.ProjectSummaryResponse;

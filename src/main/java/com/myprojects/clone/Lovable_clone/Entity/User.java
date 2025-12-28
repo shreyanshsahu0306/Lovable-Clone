@@ -3,6 +3,8 @@ package com.myprojects.clone.Lovable_clone.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 
@@ -20,12 +22,19 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(nullable = false)
     String email;
     String passwordHash;
+
+    @Column(nullable = false)
     String name;
 
     String avatarUrl;
+
+    @CreationTimestamp
     Instant createdAt;
+
+    @UpdateTimestamp
     Instant updatedAt;
 
     Instant deletedAt; //soft delete

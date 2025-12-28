@@ -22,6 +22,7 @@ public class Project {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
+    @Column(nullable = false)
     String name;
 
     @ManyToOne
@@ -35,6 +36,7 @@ public class Project {
 
     @UpdateTimestamp
     Instant updatedAt;
+
     Instant deletedAt; //soft delete
 
 }
