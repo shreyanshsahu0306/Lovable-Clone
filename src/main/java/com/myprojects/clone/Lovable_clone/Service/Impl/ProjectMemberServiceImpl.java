@@ -7,6 +7,7 @@ import com.myprojects.clone.Lovable_clone.Entity.Project;
 import com.myprojects.clone.Lovable_clone.Entity.ProjectMember;
 import com.myprojects.clone.Lovable_clone.Entity.ProjectMemberId;
 import com.myprojects.clone.Lovable_clone.Entity.User;
+import com.myprojects.clone.Lovable_clone.Error.ResourceNotFoundException;
 import com.myprojects.clone.Lovable_clone.Mapper.ProjectMemberMapper;
 import com.myprojects.clone.Lovable_clone.Repository.ProjectMemberRepository;
 import com.myprojects.clone.Lovable_clone.Repository.ProjectRepository;
@@ -34,23 +35,18 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public List<MemberResponse> getProjectMembers(Long projectId, Long userId) {
         Project project = getAccessibleProject(projectId, userId);
-        List<MemberResponse> memberResponseList = new ArrayList<>();
-        //adding owner to list
-        memberResponseList.add(projectMemberMapper.toMemberResponseFromOwner(project.getOwner()));
-        //adding other members to the list
-        memberResponseList.addAll(projectMemberRepository.findByIdProjectId(projectId).stream().map(projectMember -> projectMemberMapper.toMemberResponseFromMember(projectMember)).toList());
-        return memberResponseList;
+        return projectMemberRepository.findByIdProjectId(projectId)
+                .stream()
+                .map(projectMemberMapper::toMemberResponseFromMember)
+                .toList();
     }
 
     @Override
     public MemberResponse inviteMember(Long projectId, InviteMemberRequest request, Long userId) {
         Project project = getAccessibleProject(projectId, userId);
-        //checking if this user is the owner of project or not
-        if (!project.getOwner().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to invite.");
-        }
         //checking if user is inviting itself
-        User invitee = userRepository.findByEmail(request.email()).orElseThrow();
+        User invitee = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new ResourceNotFoundException("Member", request.username()));
         if (invitee.getId().equals(userId)) {
             throw new RuntimeException("You cannot invite yourself");
         }
@@ -73,10 +69,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public MemberResponse updateMemberRole(Long projectId, Long memberId, UpdateMemberRoleRequest request, Long userId) {
         Project project = getAccessibleProject(projectId, userId);
-        //checking if this user is the owner of project or not
-        if (!project.getOwner().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to update role.");
-        }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
         ProjectMember projectMember = projectMemberRepository.findById(projectMemberId).orElseThrow();
         projectMember.setProjectRole(request.role());
@@ -87,10 +79,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public void removeProjectMember(Long projectId, Long memberId, Long userId) {
         Project project = getAccessibleProject(projectId, userId);
-        //checking if this user is the owner of project or not
-        if (!project.getOwner().getId().equals(userId)) {
-            throw new RuntimeException("You are not allowed to delete.");
-        }
         ProjectMemberId projectMemberId = new ProjectMemberId(projectId, memberId);
         if (!projectMemberRepository.existsById(projectMemberId)) {
             throw new RuntimeException("Member not found.");
