@@ -13,6 +13,7 @@ import com.myprojects.clone.Lovable_clone.Mapper.ProjectMapper;
 import com.myprojects.clone.Lovable_clone.Repository.ProjectMemberRepository;
 import com.myprojects.clone.Lovable_clone.Repository.ProjectRepository;
 import com.myprojects.clone.Lovable_clone.Repository.UserRepository;
+import com.myprojects.clone.Lovable_clone.Security.AuthUtil;
 import com.myprojects.clone.Lovable_clone.Service.ProjectService;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -34,10 +35,12 @@ public class ProjectServiceImpl implements ProjectService {
     UserRepository userRepository;
     ProjectMapper projectMapper;
     ProjectMemberRepository projectMemberRepository;
+    AuthUtil authUtil;
 
     /*This method returns all the projects which this user is an owner of and also is a member of.*/
     @Override
-    public List<ProjectSummaryResponse> getUserProjects(Long userId) {
+    public List<ProjectSummaryResponse> getUserProjects() {
+        Long userId = authUtil.getCurrentUserId();
         return projectRepository.findAllAccessibleProjectsByUser(userId)
                 .stream()
                 .map(project -> projectMapper.toProjectSummaryResponse(project))
@@ -46,16 +49,19 @@ public class ProjectServiceImpl implements ProjectService {
 
     /*This method return project having a particular Id that belongs to this user*/
     @Override
-    public ProjectResponse getUserProjectById(Long id, Long userId) {
+    public ProjectResponse getUserProjectById(Long id) {
+        Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProject(id, userId);
         return projectMapper.toProjectResponse(project);
     }
 
     @Override
-    public ProjectResponse createProject(ProjectRequest request, Long userId) {
-        User owner = userRepository.findById(userId).orElseThrow(
-                () -> new ResourceNotFoundException("User", userId.toString())
-        );
+    public ProjectResponse createProject(ProjectRequest request) {
+        Long userId = authUtil.getCurrentUserId();
+//        User owner = userRepository.findById(userId).orElseThrow(
+//                () -> new ResourceNotFoundException("User", userId.toString())
+//        );
+        User owner = userRepository.getReferenceById(userId);
         Project project = Project.builder()
                 .name(request.name())
                 .isPublic(false)
@@ -78,7 +84,8 @@ public class ProjectServiceImpl implements ProjectService {
 
     /*This method updates the project*/
     @Override
-    public ProjectResponse updateProject(Long id, Long userId, ProjectRequest request) {
+    public ProjectResponse updateProject(Long id, ProjectRequest request) {
+        Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProject(id, userId);
         project.setName(request.name());
         project = projectRepository.save(project);// this save method is not required as the class in Transactional context so ultimately it will be committed. Just written for best practice
@@ -86,7 +93,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void softDelete(Long id, Long userId) {
+    public void softDelete(Long id) {
+        Long userId = authUtil.getCurrentUserId();
         Project project = getAccessibleProject(id, userId);
         project.setDeletedAt(Instant.now());
         projectRepository.save(project);// this save method is not required as the class in Transactional context so ultimately it will be committed. Just written for best practice
